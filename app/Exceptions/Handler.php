@@ -48,6 +48,22 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        if ($request->ajax() || $request->wantsJson()) {
+            $error = $exception->getMessage();
+
+            $response = array(
+                "status_code" => $exception->getCode() != 0 ? $exception->getStatusCode() : 500,
+                "status_msg" => "error",
+                "content" => null,
+                "error" => $error
+                );
+
+            if(env("APP_ENV") != "production"){
+                $response['stack_trace'] = $exception->getTrace();
+            }
+
+            return response()->json($response, 500);
+        }
         return parent::render($request, $exception);
     }
 }
